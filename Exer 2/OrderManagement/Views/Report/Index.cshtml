@@ -1,0 +1,241 @@
+﻿@using OrderManagement.Controllers
+@{
+    ViewBag.Title = "Báo cáo thống kê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card shadow mb-4 mt-4 border-info">
+    <div class="card-header bg-info text-white py-3">
+        <h4 class="m-0 font-weight-bold">📊 Báo Cáo Thống Kê</h4>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="reportTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-weight-bold @(ViewBag.ActiveTab == "best" || ViewBag.ActiveTab == null ? "active" : "")"
+                        id="best-tab" data-bs-toggle="tab" data-bs-target="#tab-best" type="button" role="tab">
+                    Hàng Bán Chạy
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-weight-bold @(ViewBag.ActiveTab == "agent" ? "active" : "")"
+                        id="agent-tab" data-bs-toggle="tab" data-bs-target="#tab-agent" type="button" role="tab">
+                    Đại Lý → Hàng Hóa
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-weight-bold @(ViewBag.ActiveTab == "item" ? "active" : "")"
+                        id="item-tab" data-bs-toggle="tab" data-bs-target="#tab-item" type="button" role="tab">
+                    Hàng Hóa → Đại Lý
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-4" id="reportTabsContent">
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "best" || ViewBag.ActiveTab == null ? "show active" : "")"
+                 id="tab-best" role="tabpanel">
+
+                <h5 class="text-primary mb-3 font-weight-bold">Danh sách mặt hàng bán chạy nhất</h5>
+
+                @if (ViewBag.BestItems != null)
+                {
+                    var bestItems = ViewBag.BestItems as IEnumerable<ReportItemData>;
+                    if (bestItems == null || !bestItems.Any())
+                    {
+                        <div class="alert alert-info shadow-sm">Chưa có dữ liệu mua bán.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th class="text-center align-middle" style="width:80px">Hạng</th>
+                                        <th class="align-middle">Tên sản phẩm</th>
+                                        <th class="text-center align-middle">Size</th>
+                                        <th class="text-right align-middle">Đơn giá</th>
+                                        <th class="text-right align-middle">Đã bán (SL)</th>
+                                        <th class="text-right align-middle">Doanh thu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ int rank = 1; }
+                                    @foreach (var row in bestItems)
+                                    {
+                                        string rowClass = rank == 1 ? "table-warning" : rank == 2 ? "table-active" : "";
+                                        <tr class="@rowClass">
+                                            <td class="text-center align-middle font-weight-bold" style="font-size: 1.2rem;">
+                                                @(rank)
+                                            </td>
+                                            <td class="align-middle font-weight-bold text-primary">@row.Item.ItemName</td>
+                                            <td class="text-center align-middle">@row.Item.Size</td>
+                                            <td class="text-right align-middle">@(row.Item.Price?.ToString("N0")) VNĐ</td>
+                                            <td class="text-right align-middle">
+                                                <span class="text-dark" style="font-size: 14px;">@row.TotalQty</span>
+                                            </td>
+                                            <td class="text-right text-danger align-middle font-weight-bold">
+                                                @((row.TotalQty * row.Item.Price)?.ToString("N0")) VNĐ
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "agent" ? "show active" : "")"
+                 id="tab-agent" role="tabpanel">
+
+                @using (Html.BeginForm("Index", "Report", FormMethod.Get, new { @class = "mb-4 bg-light p-3 border rounded shadow-sm" }))
+                {
+                    <input type="hidden" name="tab" value="agent" />
+                    <div class="row align-items-end">
+                        <div class="col-md-5">
+                            <label class="font-weight-bold mb-2">🔍 Lọc sản phẩm theo đại lý:</label>
+                            @Html.DropDownList("agentID", (SelectList)ViewBag.Agents, "-- Chọn đại lý --", new { @class = "form-select shadow-sm" })
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm font-weight-bold">Xem báo cáo</button>
+                        </div>
+                    </div>
+                }
+
+                @if (ViewBag.AgentResult != null)
+                {
+                    var agentResult = ViewBag.AgentResult as IEnumerable<ReportItemData>;
+                    <h5 class="mb-3">Lịch sử đặt hàng của đại lý: <strong class="text-primary text-uppercase">@ViewBag.AgentName</strong></h5>
+
+                    if (agentResult == null || !agentResult.Any())
+                    {
+                        <div class="alert alert-warning shadow-sm">Đại lý này chưa đặt mặt hàng nào.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th class="align-middle">Tên sản phẩm</th>
+                                        <th class="text-center align-middle">Size</th>
+                                        <th class="text-right align-middle">Đơn giá</th>
+                                        <th class="text-right align-middle">Tổng SL mua</th>
+                                        <th class="text-right align-middle">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in agentResult)
+                                    {
+                                        <tr>
+                                            <td class="align-middle font-weight-bold">@row.Item.ItemName</td>
+                                            <td class="text-center align-middle">@row.Item.Size</td>
+                                            <td class="text-right align-middle">@(row.Item.Price?.ToString("N0")) VNĐ</td>
+                                            <td class="text-right align-middle">
+                                                <span class="text-dark" style="font-size: 14px;">@row.TotalQty</span>
+                                            </td>
+                                            <td class="text-right text-danger align-middle font-weight-bold">
+                                                @((row.TotalQty * row.Item.Price)?.ToString("N0")) VNĐ
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light font-weight-bold text-uppercase">
+                                        <td colspan="4" class="text-right align-middle">Tổng chi tiêu:</td>
+                                        <td class="text-right text-danger align-middle">
+                                            <span style="font-size: 1.1rem;">
+                                                @{ decimal t1 = 0; foreach (var r in agentResult) { t1 += (decimal)(r.TotalQty * r.Item.Price ?? 0); } }
+                                                @t1.ToString("N0") VNĐ
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == "item" ? "show active" : "")"
+                 id="tab-item" role="tabpanel">
+
+                @using (Html.BeginForm("Index", "Report", FormMethod.Get, new { @class = "mb-4 bg-light p-3 border rounded shadow-sm" }))
+                {
+                    <input type="hidden" name="tab" value="item" />
+                    <div class="row align-items-end">
+                        <div class="col-md-5">
+                            <label class="font-weight-bold mb-2">🔍 Lọc danh sách khách mua theo sản phẩm:</label>
+                            @Html.DropDownList("itemID", (SelectList)ViewBag.Items, "-- Chọn sản phẩm --", new { @class = "form-select shadow-sm" })
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm font-weight-bold">Xem báo cáo</button>
+                        </div>
+                    </div>
+                }
+
+                @if (ViewBag.ItemResult != null)
+                {
+                    var itemResult = ViewBag.ItemResult as IEnumerable<ReportAgentData>;
+                    <h5 class="mb-3">Danh sách khách hàng đã mua: <strong class="text-primary text-uppercase">@ViewBag.ItemName</strong></h5>
+
+                    if (itemResult == null || !itemResult.Any())
+                    {
+                        <div class="alert alert-warning shadow-sm">Sản phẩm này chưa có đơn đặt hàng nào.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th class="align-middle">Tên đại lý</th>
+                                        <th class="align-middle">Địa chỉ</th>
+                                        <th class="text-center align-middle">Mã đơn</th>
+                                        <th class="text-right align-middle">Số lượng</th>
+                                        <th class="text-right align-middle">Đơn giá</th>
+                                        <th class="text-right align-middle">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in itemResult)
+                                    {
+                                        <tr>
+                                            <td class="align-middle font-weight-bold text-primary text-uppercase">@(row.Agent?.AgentName)</td>
+                                            <td class="align-middle small">@(row.Agent?.Address)</td>
+                                            <td class="text-center align-middle">
+                                                <span class="text-dark">#@row.Order.OrderID</span>
+                                            </td>
+                                            <td class="text-right align-middle font-weight-bold">@row.Quantity</td>
+                                            <td class="text-right align-middle">@(row.UnitAmount?.ToString("N0")) VNĐ</td>
+                                            <td class="text-right text-danger align-middle font-weight-bold">
+                                                @((row.Quantity * row.UnitAmount)?.ToString("N0")) VNĐ
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light font-weight-bold text-uppercase">
+                                        <td colspan="5" class="text-right align-middle">Tổng thu từ sản phẩm:</td>
+                                        <td class="text-right text-danger align-middle">
+                                            <span style="font-size: 1.1rem;">
+                                                @{ decimal t2 = 0; foreach (var r in itemResult) { t2 += (decimal)(r.Quantity * r.UnitAmount ?? 0); } }
+                                                @t2.ToString("N0") VNĐ
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/bootstrap")
+}

@@ -1,0 +1,45 @@
+﻿@model IEnumerable<OrderManagement.Models.Item>
+@{
+    ViewBag.Title = "Danh sách Sản phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card shadow mb-4 mt-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h4 class="m-0 font-weight-bold text-primary">Danh Sách Sản Phẩm</h4>
+        <a href="@Url.Action("Create")" class="btn btn-success">
+            + Thêm Sản Phẩm Mới
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Mã SP</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Kích Cỡ</th>
+                        <th>Đơn Giá</th>
+                        <th>Mô Tả</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ItemID</td>
+                            <td class="font-weight-bold">@item.ItemName</td>
+                            <td>@item.Size</td>
+                            <td class="text-danger">@(item.Price.HasValue ? item.Price.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
+                            <td>@item.Description</td>
+                            <td>
+                                @Html.ActionLink("Xóa", "Delete", new { id = item.ItemID }, new { @class = "btn btn-sm btn-danger" })
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

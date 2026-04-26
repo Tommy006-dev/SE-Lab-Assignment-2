@@ -1,0 +1,41 @@
+﻿@model IEnumerable<OrderManagement.Models.Agent>
+@{
+    ViewBag.Title = "Danh sách Đại lý";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card shadow mb-4 mt-4 border-info">
+    <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
+        <h4 class="m-0 font-weight-bold">Danh Sách Đại Lý</h4>
+        <a href="@Url.Action("Create")" class="btn btn-light text-info font-weight-bold">
+            + Thêm Đại Lý Mới
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Mã ĐL</th>
+                        <th>Tên Đại Lý</th>
+                        <th>Địa Chỉ Giao Hàng</th>
+                        <th width="150px">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="font-weight-bold">@item.AgentID</td>
+                            <td class="text-primary font-weight-bold">@item.AgentName</td>
+                            <td>@item.Address</td>
+                            <td>
+                                @Html.ActionLink("Xóa", "Delete", new { id = item.AgentID }, new { @class = "btn btn-sm btn-danger" })
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

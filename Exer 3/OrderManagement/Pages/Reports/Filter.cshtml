@@ -1,0 +1,63 @@
+﻿@page
+@model OrderManagementRazor.Pages.Reports.FilterModel
+
+<h2>Thống kê / Báo cáo</h2>
+
+<!-- PHẦN 1: Mặt hàng bán chạy nhất -->
+<h4>Top mặt hàng bán chạy</h4>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Tên mặt hàng</th>
+            <th>Tổng số lượng đã bán</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.BestItems)
+        {
+            <tr>
+                <td>@item.ItemName</td>
+                <td>@item.TotalQty</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- PHẦN 2: Lọc theo đại lý -->
+<h4>Đại lý đã mua những mặt hàng nào</h4>
+<form method="get">
+    <select name="agentId" class="form-select w-25 d-inline">
+        <option value="">-- Chọn đại lý --</option>
+        @foreach (var agent in Model.AgentList)
+        {
+            <option value="@agent.AgentId"
+                    selected="@(Model.SelectedAgentId == agent.AgentId)">
+                @agent.AgentName
+            </option>
+        }
+    </select>
+    <button type="submit" class="btn btn-primary">Lọc</button>
+</form>
+
+@if (Model.ItemsByAgent.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-info">
+            <tr>
+                <th>Tên mặt hàng</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.ItemsByAgent)
+            {
+                <tr>
+                    <td>@row.ItemName</td>
+                    <td>@row.Quantity</td>
+                    <td>@row.UnitAmount.ToString("N0") đ</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Đại lý theo sản phẩm";
+}
+
+<h4 class="mb-3">🏪 Đại lý đã mua sản phẩm</h4>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="itemId" class="form-select">
+            <option value="">-- Chọn sản phẩm --</option>
+            @foreach (var item in ViewBag.Items)
+            {
+                <option value="@item.ItemID"
+                        selected="@(ViewBag.SelectedItem == item.ItemID)">
+                    @item.ItemName
+                </option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+    </div>
+</form>
+
+@if (Model != null)
+{
+    <table class="table table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>Đại lý</th>
+                <th>Địa chỉ</th>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Ngày đặt</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (dynamic row in Model)
+            {
+                <tr>
+                    <td>@row.AgentName</td>
+                    <td>@row.Address</td>
+                    <td>@row.ItemName</td>
+                    <td>@row.Quantity</td>
+                    <td>@row.UnitAmount?.ToString("N0") VNĐ</td>
+                    <td>@row.OrderDate.ToString("dd/MM/yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Sản phẩm bán chạy";
+}
+
+<h4 class="mb-3">🏆 Sản phẩm bán chạy nhất</h4>
+
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Hạng</th>
+            <th>Tên sản phẩm</th>
+            <th>Tổng SL bán</th>
+            <th>Tổng doanh thu</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rank = 1;
+        }
+        @foreach (dynamic item in Model)
+        {
+            <tr>
+                <td><span class="badge bg-warning text-dark">@rank</span></td>
+                <td>@item.ItemName</td>
+                <td>@item.TotalQty</td>
+                <td>@item.TotalAmt?.ToString("N0") VNĐ</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>

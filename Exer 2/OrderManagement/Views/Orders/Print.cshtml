@@ -1,0 +1,81 @@
+﻿@model OrderManagement.Models.Order
+@{ Layout = null; }
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td, th {
+            border: 1px solid #333;
+            padding: 8px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+        /* Ẩn các phần tử có class no-print khi in */
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center">HÓA ĐƠN ĐẶT HÀNG</h2>
+
+    <p><strong>Mã đơn:</strong> @Model.OrderID</p>
+    <p><strong>Ngày:</strong> @(Model.OrderDate.ToString("dd/MM/yyyy"))</p>
+    <p><strong>Đại lý:</strong> @(Model.Agent?.AgentName)</p>
+    <p><strong>Địa chỉ:</strong> @(Model.Agent?.Address)</p>
+
+    <table>
+        <thead>
+            <tr style="background:#ddd">
+                <th>STT</th>
+                <th>Sản phẩm</th>
+                <th>SL</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int stt = 1; decimal total = 0; }
+            @foreach (var d in Model.OrderDetails)
+            {
+                decimal amount = (d.Quantity ?? 0) * (d.UnitAmount ?? 0);
+                total += amount;
+                <tr>
+                    <td>@stt</td>
+                    <td>@(d.Item?.ItemName)</td>
+                    <td>@d.Quantity</td>
+                    <td class="text-right">@(d.UnitAmount?.ToString("N0"))</td>
+                    <td class="text-right">@amount.ToString("N0")</td>
+                </tr>
+                stt++;
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-right"><strong>Tổng cộng:</strong></td>
+                <td class="text-right"><strong>@total.ToString("N0") VNĐ</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <br />
+    <div class="no-print">
+        <button onclick="window.print()">🖨️ In hóa đơn</button>
+        <a href="@Url.Action("Index", "Main")">← Quay lại</a>
+    </div>
+</body>
+</html>

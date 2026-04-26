@@ -1,0 +1,161 @@
+﻿@{
+    ViewBag.Title = "Tạo đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-3">
+    <h2>Tạo đơn hàng mới</h2>
+    @using (Html.BeginForm("Create", "Orders", FormMethod.Post, new { id = "orderForm" }))
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Đại lý</label>
+                    @Html.DropDownList("AgentID", (SelectList)ViewBag.Agents,
+                        "-- Chọn đại lý --", new { @class = "form-control" })
+                </div>
+                <div class="form-group">
+                    <label>Ngày đặt hàng</label>
+                    <input type="date" name="OrderDate" class="form-control"
+                           value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+        </div>
+
+        <hr />
+        <h4>Chi tiết đơn hàng</h4>
+
+        <!-- Dòng thêm sản phẩm -->
+        <div class="row mb-2">
+            <div class="col-md-4">
+                <select id="ddlItem" class="form-control">
+                    <option value="">-- Chọn sản phẩm --</option>
+                    @foreach (var item in (List<OrderManagement.Models.Item>)ViewBag.Items)
+                    {
+                        <option value="@item.ItemID"
+                                data-price="@item.Price"
+                                data-name="@item.ItemName">
+                            @item.ItemName - @(item.Price.HasValue ? item.Price.Value.ToString("N0") + "VNĐ" : "0 VNĐ")
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="txtQty" class="form-control"
+                       placeholder="Số lượng" min="1" value="1" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-info" onclick="addItem()">
+                    + Thêm
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết -->
+        <table class="table table-bordered" id="tblDetail">
+            <thead class="thead-light">
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="detailBody"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>Tổng cộng:</strong></td>
+                    <td id="totalAmount" class="text-danger"><strong>0 VNĐ</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div id="hiddenInputs"></div>
+
+        if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        <button type="submit" class="btn btn-primary" onclick="submitOrder()">Lưu đơn hàng</button>
+        <a href="@Url.Action("Index", "Main")" class="btn btn-secondary">Hủy</a>
+    }
+</div>
+
+<script>
+    let items = [];
+
+    function addItem() {
+        const sel = document.getElementById('ddlItem');
+        const qty = parseInt(document.getElementById('txtQty').value);
+        const itemID = sel.value;
+        const itemName = sel.options[sel.selectedIndex].dataset.name;
+        const price = parseFloat(sel.options[sel.selectedIndex].dataset.price);
+
+        if (!itemID || qty < 1) { alert('Chọn sản phẩm và nhập số lượng!'); return; }
+
+        // Nếu đã có thì cộng số lượng
+        const exist = items.find(x => x.id == itemID);
+        if (exist) { exist.qty += qty; }
+        else { items.push({ id: itemID, name: itemName, qty: qty, price: price }); }
+        renderTable();
+    }
+
+    function removeItem(idx) {
+        items.splice(idx, 1);
+        renderTable();
+    }
+
+    function renderTable() {
+        let html = '';
+        let total = 0;
+        let hiddens = '';
+
+        items.forEach((item, i) => {
+            const amount = item.qty * item.price;
+            total += amount;
+            html += `<tr>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                <td>${item.price.toLocaleString('vi-VN')} VNĐ</td>
+                <td>${amount.toLocaleString('vi-VN')} VNĐ</td>
+                <td><button type="button" class="btn btn-danger btn-sm"
+                    onclick="removeItem(${i})">Xóa</button></td>
+            </tr>`;
+            hiddens += `<input type="hidden" name="itemIDs" value="${item.id}" />
+                        <input type="hidden" name="quantities" value="${item.qty}" />
+                        <input type="hidden" name="unitAmounts" value="${item.price}" />`;
+        });
+
+        document.getElementById('detailBody').innerHTML = html;
+        document.getElementById('hiddenInputs').innerHTML = hiddens;
+        document.getElementById('totalAmount').innerHTML =
+            `<strong>${total.toLocaleString('vi-VN')} VNĐ</strong>`;
+    }
+
+    function submitOrder() {
+        // 1. Kiểm tra đại lý
+        const agentID = document.querySelector('select[name="AgentID"]').value;
+        if (!agentID) {
+            alert('Vui lòng chọn đại lý!');
+            return;
+        }
+
+        // 2. Kiểm tra ngày đặt hàng
+        const orderDate = document.querySelector('input[name="OrderDate"]').value;
+        if (!orderDate) {
+            alert('Vui lòng nhập ngày đặt hàng!');
+            return;
+        }
+
+        // 3. Kiểm tra có sản phẩm chưa
+        if (items.length === 0) {
+            alert('Vui lòng thêm ít nhất 1 sản phẩm vào đơn hàng!');
+            return;
+        }
+
+        // 4. Tất cả hợp lệ → submit form
+        document.getElementById('orderForm').submit();
+    }
+</script>

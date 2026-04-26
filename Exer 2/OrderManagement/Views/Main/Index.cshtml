@@ -1,0 +1,36 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Trang chủ";
+}
+
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">
+        <span class="glyphicon glyphicon-home"></span>
+        Xin chào, <strong>@Session["UserName"]</strong>!
+    </h2>
+
+    <!-- Menu chức năng chính -->
+    <h4 class="mt-4">Chức năng</h4>
+    <div class="row">
+        <div class="col-md-4">
+            <a href='@Url.Action("Index","Items")' class="btn btn-lg btn-default btn-block mb-2">
+                <span class="glyphicon glyphicon-tag"></span> Quản lý sản phẩm
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href='@Url.Action("Index","Agents")' class="btn btn-lg btn-default btn-block mb-2">
+                <span class="glyphicon glyphicon-user"></span> Quản lý đại lý
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href='@Url.Action("Index","Orders")' class="btn btn-lg btn-default btn-block mb-2">
+                <span class="glyphicon glyphicon-shopping-cart"></span> Quản lý đơn hàng
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href='@Url.Action("Index","Report")' class="btn btn-lg btn-default btn-block mb-2">
+                <span class="glyphicon glyphicon-fire"></span> Hàng bán chạy
+            </a>
+        </div>
+    </div>
+</div>
